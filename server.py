@@ -1,5 +1,6 @@
 import socket
 import subprocess
+import sleep
 
 
 class Executor:
@@ -21,6 +22,7 @@ class Command:
     RV = 'RV' # restart visualization
     CB = 'CB' # change brightness
     CP = 'CP' # change number of pixels
+    CF = 'CF' # change FPS
     #_script_dir = './visualization.py'
     _script_dir = '/home/pi/audio-reactive-led-strip/python/visualization.py'
 
@@ -28,6 +30,7 @@ class Command:
     def kill_visualization():
         if Command._last_process:
             subprocess.Popen.terminate(Command._last_process)
+            sleep(3)
 
     @staticmethod
     def restart_visualization():
@@ -54,6 +57,11 @@ class Command:
         Command.kill_visualization()
         Command._last_process = subprocess.Popen(['python', Command._script_dir, '-cp=' + str(number_of_pixels)])
 
+    @staticmethod
+    def change_fps(fps):
+        Command.kill_visualization()
+        Command._last_process = subprocess.Popen(['python', Command._script_dir, '-cf=' + str(fps)])
+
 
 def command_handler(s):
     arguments = s.decode('utf-8')
@@ -76,6 +84,8 @@ def command_handler(s):
         method = Command.change_brightness
     if command == Command.CP:
         method = Command.change_number_of_pixels
+    if command == Command.CF:
+        method = Command.change_fps
     return Executor(method, parameter)
 
 
